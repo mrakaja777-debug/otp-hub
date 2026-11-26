@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OTP Hub - Multiple Numbers</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding: 22px 16px 40px;
+    background: linear-gradient(135deg, #5f52e8 0%, #8b5cf6 45%, #c026d3 100%);
+    color: #111827;
+  }
+
+  .app { max-width: 1080px; margin: 0 auto; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #fff;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .18);
+    border: 1px solid rgba(255, 255, 255, .35);
+    display: grid;
+    place-items: center;
+  }
+
+  .brand-mark svg { width: 23px; height: 23px; }
+
+  .badge {
+    background: rgba(255, 255, 255, .2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .35);
+    padding: 6px 11px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .8px;
+  }
+
+  .panel {
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 22px 55px rgba(35, 15, 85, .25);
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .stat {
+    background: #f7f6ff;
+    border: 1px solid #ece9ff;
+    border-radius: 15px;
+    padding: 14px 16px;
+  }
+
+  .stat-label { color: #7c739c; font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
+  .stat-value { font-size: 25px; font-weight: 800; margin-top: 4px; letter-spacing: -.5px; }
+
+  .section-title { font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+
+  .add-row { display: flex; gap: 9px; flex-wrap: wrap; }
+
+  .add-row input {
+    flex: 1;
+    min-width: 180px;
+    height: 46px;
+    padding: 0 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+  }
+
+  .add-row input:focus { border-color: #6d5efc; box-shadow: 0 0 0 4px rgba(109, 94, 252, .12); }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6d5efc, #9167f7);
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    padding: 0 18px;
+    min-height: 46px;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .2s, opacity .2s;
+    box-shadow: 0 8px 18px rgba(109, 94, 252, .26);
+  }
+
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: none; }
+  .btn.soft { background: #f1efff; color: #6d3ff0; box-shadow: none; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .search {
+    flex: 1;
+    min-width: 200px;
+    height: 42px;
+    padding: 0 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 11px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .search:focus { border-color: #6d5efc; }
+
+  .switch { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 700; color: #4b5563; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+
+  .track {
+    width: 42px;
+    height: 24px;
+    background: #d1d5db;
+    border-radius: 99px;
+    position: relative;
+    transition: background .2s;
+  }
+
+  .track::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+  }
+
+  .switch input:checked + .track { background: #6d5efc; }
+  .switch input:checked + .track::after { transform: translateX(18px); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 14px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #eeeef5;
+    border-radius: 18px;
+    padding: 17px;
+    box-shadow: 0 6px 18px rgba(40, 25, 90, .06);
+  }
+
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+  .number { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; }
+
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; flex: none; }
+  .dot.waiting { background: #f59e0b; }
+
+  .icon-btn {
+    border: none;
+    background: #f6f6fa;
+    color: #8b8ba7;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .icon-btn:hover { background: #fee2e2; color: #dc2626; }
+  .icon-btn svg { width: 15px; height: 15px; }
+
+  .status-line { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; color: #8b8ba7; }
+
+  .otp-box {
+    margin-top: 10px;
+    background: #f7f6ff;
+    border: 1px dashed #cdc6fc;
+    border-radius: 13px;
+    padding: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .otp-code { font-size: 23px; font-weight: 800; letter-spacing: 4px; color: #5b21b6; }
+  .otp-code.empty { color: #b6afc9; letter-spacing: 2px; font-size: 18px; }
+
+  .copy-btn {
+    border: none;
+    background: #fff;
+    color: #6d5efc;
+    border-radius: 9px;
+    padding: 7px 9px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(60, 40, 130, .08);
+  }
+
+  .history { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 11px; min-height: 24px; }
+
+  .chip {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 7px;
+    padding: 4px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+
+  .card-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+  .small-btn {
+    flex: 1;
+    min-height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .small-btn.primary { background: #6d5efc; border-color: #6d5efc; color: #fff; }
+  .small-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  .empty {
+    text-align: center;
+    padding: 54px 20px;
+    color: #8b8ba7;
+  }
+
+  .empty strong { display: block; color: #374151; font-size: 17px; margin-bottom: 6px; }
+  .empty span { font-size: 13px; }
+
+  .toast-wrap {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 20;
+  }
+
+  .toast {
+    background: #1f2937;
+    color: #fff;
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+    animation: slide .2s ease;
+  }
+
+  @keyframes slide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 600px) {
+    .panel { padding: 16px; }
+    .stats { gap: 8px; }
+    .stat { padding: 11px; }
+    .stat-value { font-size: 20px; }
+    .brand { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+            <rect x="7" y="2" width="10" height="20" rx="2" />
+            <path d="M11 18h2" />
+          </svg>
+        </span>
+        OTP Hub
+      </div>
+      <span class="badge">DEMO MODE</span>
+    </header>
+
+    <section class="panel">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Numbers</div>
+          <div class="stat-value" id="statNumbers">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">OTP received</div>
+          <div class="stat-value" id="statOtps">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Waiting</div>
+          <div class="stat-value" id="statWaiting">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="section-title">Add numbers</p>
+      <div class="add-row">
+        <input id="numberInput" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" />
+        <button class="btn" id="addBtn">Add number</button>
+        <button class="btn soft" id="bulkBtn">Add 5 random</button>
+      </div>
+      <p class="error" id="addError" style="color:#dc2626;font-size:13px;font-weight:600;min-height:18px;margin-top:10px"></p>
+    </section>
+
+    <div class="toolbar">
+      <input class="search" id="searchInput" type="search" placeholder="Search number or OTP..." />
+      <label class="switch">
+        <input type="checkbox" id="autoToggle" />
+        <span class="track"></span>
+        Auto receive OTP
+      </label>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+  const STORAGE_KEY = 'otpHubNumbers';
+  const grid = document.getElementById('grid');
+  const numberInput = document.getElementById('numberInput');
+  const addError = document.getElementById('addError');
+  const searchInput = document.getElementById('searchInput');
+  const autoToggle = document.getElementById('autoToggle');
+  let numbers = load();
+  let autoTimer = null;
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(numbers));
+    } catch (error) {
+      toast('Storage unavailable, data will reset on reload');
+    }
+  }
+
+  function makeOtp() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  function randomNumber() {
+    return String(6 + Math.floor(Math.random() * 4)) + String(Math.floor(100000000 + Math.random() * 900000000));
+  }
+
+  function timeAgo(timestamp) {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 10) return 'just now';
+    if (seconds < 60) return seconds + 's ago';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + 'm ago';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + 'h ago';
+    return Math.floor(hours / 24) + 'd ago';
+  }
+
+  function toast(message) {
+    const element = document.createElement('div');
+    element.className = 'toast';
+    element.textContent = message;
+    document.getElementById('toastWrap').appendChild(element);
+    setTimeout(() => element.remove(), 3000);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => toast('Copied: ' + text)).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const field = document.createElement('textarea');
+    field.value = text;
+    document.body.appendChild(field);
+    field.select();
+    document.execCommand('copy');
+    field.remove();
+    toast('Copied: ' + text);
+  }
+
+  function addNumber(raw) {
+    const value = String(raw).replace(/\D/g, '').slice(0, 10);
+    if (value.length !== 10) {
+      addError.textContent = 'Enter a valid 10-digit mobile number.';
+      return false;
+    }
+    if (numbers.some(item => item.number === value)) {
+      addError.textContent = 'This number is already in the list.';
+      return false;
+    }
+    numbers.unshift({ id: Date.now() + Math.random(), number: value, otps: [], pending: false });
+    addError.textContent = '';
+    save();
+    render();
+    return true;
+  }
+
+  function deliverOtp(id, notify) {
+    const item = numbers.find(entry => entry.id === id);
+    if (!item) return;
+    item.pending = false;
+    item.otps.unshift({ code: makeOtp(), at: Date.now() });
+    item.otps = item.otps.slice(0, 10);
+    save();
+    render();
+    if (notify) toast('OTP received for +91 ' + item.number);
+  }
+
+  function requestOtp(id) {
+    const item = numbers.find(entry => entry.id === id);
+    if (!item || item.pending) return;
+    item.pending = true;
+    render();
+    toast('Waiting for OTP on +91 ' + item.number);
+    setTimeout(() => deliverOtp(id, true), 1200 + Math.floor(Math.random() * 1400));
+  }
+
+  function deleteNumber(id) {
+    numbers = numbers.filter(item => item.id !== id);
+    save();
+    render();
+    toast('Number removed');
+  }
+
+  function makeButton(label, className, handler) {
+    const button = document.createElement('button');
+    button.className = className;
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+
+  function buildCard(item) {
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const head = document.createElement('div');
+    head.className = 'card-head';
+
+    const number = document.createElement('div');
+    number.className = 'number';
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (item.pending ? ' waiting' : '');
+    const label = document.createElement('span');
+    label.textContent = '+91 ' + item.number;
+    number.append(dot, label);
+
+    const remove = document.createElement('button');
+    remove.className = 'icon-btn';
+    remove.title = 'Remove number';
+    remove.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>';
+    remove.addEventListener('click', () => deleteNumber(item.id));
+    head.append(number, remove);
+
+    const statusLine = document.createElement('div');
+    statusLine.className = 'status-line';
+    const status = document.createElement('span');
+    status.textContent = item.pending ? 'Waiting for OTP...' : (item.otps.length ? 'OTP ready' : 'No OTP yet');
+    const time = document.createElement('span');
+    time.dataset.time = item.otps.length ? item.otps[0].at : '';
+    time.textContent = item.otps.length ? timeAgo(item.otps[0].at) : '';
+    statusLine.append(status, time);
+
+    const otpBox = document.createElement('div');
+    otpBox.className = 'otp-box';
+    const code = document.createElement('span');
+    const latest = item.otps[0];
+    code.className = 'otp-code' + (latest ? '' : ' empty');
+    code.textContent = latest ? latest.code : '------';
+    const copyOtp = makeButton('Copy', 'copy-btn', () => {
+      if (latest) copyText(latest.code);
+      else toast('No OTP to copy yet');
+    });
+    otpBox.append(code, copyOtp);
+
+    const history = document.createElement('div');
+    history.className = 'history';
+    item.otps.slice(1, 4).forEach(entry => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = entry.code;
+      history.appendChild(chip);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
+    const request = makeButton(item.pending ? 'Waiting...' : 'Request OTP', 'small-btn primary', () => requestOtp(item.id));
+    request.disabled = item.pending;
+    const copyNumber = makeButton('Copy number', 'small-btn', () => copyText('+91' + item.number));
+    actions.append(request, copyNumber);
+
+    card.append(head, statusLine, otpBox, history, actions);
+    return card;
+  }
+
+  function render() {
+    const query = searchInput.value.trim();
+    const visible = numbers.filter(item => {
+      if (!query) return true;
+      return item.number.includes(query) || item.otps.some(entry => entry.code.includes(query));
+    });
+
+    grid.innerHTML = '';
+    if (!visible.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.style.gridColumn = '1 / -1';
+      const title = document.createElement('strong');
+      title.textContent = numbers.length ? 'Koi number nahi mila' : 'Abhi koi number nahi hai';
+      const text = document.createElement('span');
+      text.textContent = numbers.length ? 'Search badal kar dekhein.' : 'Upar se number add karein ya random numbers generate karein.';
+      empty.append(title, text);
+      grid.appendChild(empty);
+    } else {
+      visible.forEach(item => grid.appendChild(buildCard(item)));
+    }
+
+    document.getElementById('statNumbers').textContent = numbers.length;
+    document.getElementById('statOtps').textContent = numbers.reduce((total, item) => total + item.otps.length, 0);
+    document.getElementById('statWaiting').textContent = numbers.filter(item => item.pending).length;
+  }
+
+  numberInput.addEventListener('input', () => {
+    numberInput.value = numberInput.value.replace(/\D/g, '').slice(0, 10);
+    addError.textContent = '';
+  });
+
+  numberInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      if (addNumber(numberInput.value)) numberInput.value = '';
+    }
+  });
+
+  document.getElementById('addBtn').addEventListener('click', () => {
+    if (addNumber(numberInput.value)) numberInput.value = '';
+  });
+
+  document.getElementById('bulkBtn').addEventListener('click', () => {
+    for (let i = 0; i < 5; i++) addNumber(randomNumber());
+    addError.textContent = '';
+    toast('5 numbers added');
+  });
+
+  searchInput.addEventListener('input', render);
+
+  autoToggle.addEventListener('change', () => {
+    clearInterval(autoTimer);
+    if (autoToggle.checked) {
+      autoTimer = setInterval(() => {
+        const ready = numbers.filter(item => !item.pending);
+        if (ready.length) deliverOtp(ready[Math.floor(Math.random() * ready.length)].id, true);
+      }, 3500);
+      toast('Auto receive ON');
+    } else {
+      toast('Auto receive OFF');
+    }
+  });
+
+  setInterval(() => {
+    document.querySelectorAll('[data-time]').forEach(node => {
+      if (node.dataset.time) node.textContent = timeAgo(Number(node.dataset.time));
+    });
+  }, 15000);
+
+  render();
+</script>
+</body>
+</html>
